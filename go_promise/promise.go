@@ -61,7 +61,7 @@ func NewPromise(executor Executor) *Promise {
 	return promise
 }
 
-func (promise *Promise) Then(onFullFilled OnFulFilled, onRejected OnRejected) *Promise {
+func (promise *Promise) Then(onFullFilled OnFulFilled, onRejected ...OnRejected) *Promise {
 	var promise2 *Promise
 	promise2 = NewPromise(func(resolve Resolve, reject Reject) error {
 		if promise.status == RESOLVED {
@@ -73,7 +73,7 @@ func (promise *Promise) Then(onFullFilled OnFulFilled, onRejected OnRejected) *P
 			resolvePromise(promise2, result, resolve, reject)
 		}
 		if promise.status == REJECTED {
-			result, err := onRejected(promise.reason)
+			result, err := onRejected[0](promise.reason)
 			if err != nil {
 				reject(err)
 				return err
@@ -90,7 +90,7 @@ func (promise *Promise) Then(onFullFilled OnFulFilled, onRejected OnRejected) *P
 				resolvePromise(promise2, result, resolve, reject)
 			})
 			promise.OnRejectedCallbacks = append(promise.OnRejectedCallbacks, func() {
-				result, err := onRejected(promise.reason)
+				result, err := onRejected[0](promise.reason)
 				if err != nil {
 					reject(err)
 					return

@@ -6,11 +6,13 @@ import (
 )
 
 func TestAxios(t *testing.T) {
-
-	config := NewConfig()
-	config.URL = "http://localhost:8000/hello"
-	config.Method = GET
-	axios := Create(config)
+	axios := DefaultAxios()
+	axios.AddRequestInterceptorHandler(NewHandler(func(value interface{}) (interface{}, error) {
+		fmt.Println("request interceptor")
+		return value, nil
+	}, func(reason interface{}) (interface{}, error) {
+		return nil, nil
+	}, false))
 	axios.Get("http://localhost:8000/hello", nil).Then(func(value interface{}) (interface{}, error) {
 		fmt.Println(value)
 		return nil, nil

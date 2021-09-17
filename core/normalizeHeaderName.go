@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func NormalizeHeaderName(header Header, normalizedName string) {
+func NormalizeHeaderName(header *Header, normalizedName string) {
 	for k, v := range header.Header {
 		if k != normalizedName && strings.ToLower(k) == strings.ToLower(normalizedName) {
 			header.Del(k)

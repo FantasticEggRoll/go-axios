@@ -23,7 +23,7 @@ func DefaultHttpClient() *http.Client {
 	return &http.Client{}
 }
 
-func DefaultTransformRequest(data interface{}, header Header) (interface{}, error) {
+func DefaultTransformRequest(data interface{}, header *Header) (interface{}, error) {
 	NormalizeHeaderName(header, "Accept")
 	NormalizeHeaderName(header, "Content-Type")
 

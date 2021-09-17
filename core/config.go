@@ -42,12 +42,12 @@ func (serializer SerializeParam) Serialize(param interface{}) (string, error) {
 // RequestTransformer
 
 type RequestTransformer interface {
-	Transform(interface{}, Header) (interface{}, error)
+	Transform(interface{}, *Header) (interface{}, error)
 }
 
-type TransformerRequest func(interface{}, Header) (interface{}, error)
+type TransformerRequest func(interface{}, *Header) (interface{}, error)
 
-func (req TransformerRequest) Transform(data interface{}, header Header) (interface{}, error) {
+func (req TransformerRequest) Transform(data interface{}, header *Header) (interface{}, error) {
 	return req(data, header)
 }
 
@@ -66,10 +66,10 @@ func (resp TransformerResponse) Transform(data interface{}) (interface{}, error)
 type Adapter func(config *Config) *go_promise.Promise
 
 type Config struct {
-	URL                 string `json:"url"`
-	Method              Method `json:"method"`
-	Header              Header `json:"header"`
-	Param               Param  `json:"param"`
+	URL                 string  `json:"url"`
+	Method              Method  `json:"method"`
+	Header              *Header `json:"header"`
+	Param               *Param  `json:"param"`
 	SerializeParam      ParamSerializer
 	Data                interface{}
 	TransformRequests   []RequestTransformer
@@ -78,6 +78,20 @@ type Config struct {
 }
 
 func NewConfig() *Config {
+	return &Config{
+		URL:                 "",
+		Method:              GET,
+		Header:              NewHeader(),
+		Param:               NewParam(),
+		Data:                nil,
+		SerializeParam:      nil,
+		TransformRequests:   make([]RequestTransformer, 0),
+		TransformerResponse: make([]ResponseTransformer, 0),
+		Adapter:             nil,
+	}
+}
+
+func DefaultConfig() *Config {
 	return &Config{
 		URL:                 "",
 		Method:              GET,
@@ -95,14 +109,14 @@ func (config *Config) AddRequestTransform(transformer RequestTransformer) {
 	config.TransformRequests = append(config.TransformRequests, transformer)
 }
 
-func NewParam() Param {
-	return Param{
+func NewParam() *Param {
+	return &Param{
 		url.Values{},
 	}
 }
 
-func NewHeader() Header {
-	return Header{
+func NewHeader() *Header {
+	return &Header{
 		http.Header{},
 	}
 }

@@ -15,7 +15,17 @@ type Axios struct {
 	interceptors *Interceptors
 }
 
-func Create(instanceConfig *Config) *Axios {
+func DefaultAxios() *Axios {
+	return &Axios{
+		defaults: DefaultConfig(),
+		interceptors: &Interceptors{
+			NewInterceptorManager(),
+			NewInterceptorManager(),
+		},
+	}
+}
+
+func NewAxios(instanceConfig *Config) *Axios {
 	return &Axios{
 		defaults: instanceConfig,
 		interceptors: &Interceptors{
@@ -26,13 +36,13 @@ func Create(instanceConfig *Config) *Axios {
 }
 
 func (axios *Axios) Request(config *Config) *go_promise.Promise {
-	//config = MergeConfig(axios.defaults, config)
+	config = MergeConfig(axios.defaults, config)
 
 	requestInterceptorChain := make([]interface{}, 0)
 	//头插构造请求拦截链
 	for _, handler := range axios.interceptors.request.handlers {
-		pair := []interface{}{handler.fulfilled, handler.rejected}
-		requestInterceptorChain = append(pair, requestInterceptorChain)
+		pair := []interface{}{handler.OnFulfilled, handler.OnRejected}
+		requestInterceptorChain = append(pair, requestInterceptorChain...)
 	}
 
 	responseInterceptorChain := make([]interface{}, 0)
@@ -40,7 +50,7 @@ func (axios *Axios) Request(config *Config) *go_promise.Promise {
 	synchronousRequestInterceptors := true
 	for _, handler := range axios.interceptors.response.handlers {
 		synchronousRequestInterceptors = synchronousRequestInterceptors && handler.synchronous
-		responseInterceptorChain = append(responseInterceptorChain, handler.fulfilled, handler.rejected)
+		responseInterceptorChain = append(responseInterceptorChain, handler.OnFulfilled, handler.OnRejected)
 	}
 
 	if !synchronousRequestInterceptors {
@@ -82,19 +92,21 @@ func (axios *Axios) Request(config *Config) *go_promise.Promise {
 }
 
 func (axios *Axios) RequestWithoutData(url string, method Method, config *Config) *go_promise.Promise {
-	/*
-		MergeConfig(axios.defaults, &Config{
-			URL:    url,
-			Method: method,
-			//Data:   config.Data,
-		})
+	var data interface{}
+	if config != nil {
+		data = config.Data
+	}
+	config = MergeConfig(config, &Config{
+		URL:    url,
+		Method: method,
+		Data:   data,
+	})
 
-	*/
-	return axios.Request(axios.defaults)
+	return axios.Request(config)
 }
 
 func (axios *Axios) RequestWithData(url string, method Method, data interface{}, config *Config) *go_promise.Promise {
-	MergeConfig(axios.defaults, &Config{
+	config = MergeConfig(config, &Config{
 		URL:    url,
 		Method: method,
 		Data:   data,
@@ -137,4 +149,18 @@ func (axios *Axios) GetURL(config *Config) (string, error) {
 		return "", err
 	}
 	return strings.ReplaceAll(url, `\`, ""), nil
+}
+
+func (axios *Axios) AddRequestInterceptorHandler(handler *Handler) {
+	if handler == nil || handler.OnFulfilled == nil || handler.OnRejected == nil {
+		return
+	}
+	axios.interceptors.request.handlers = append(axios.interceptors.request.handlers, handler)
+}
+
+func (axios *Axios) AddResponseInterceptorHandler(handler *Handler) {
+	if handler == nil || handler.OnFulfilled == nil || handler.OnRejected == nil {
+		return
+	}
+	axios.interceptors.response.handlers = append(axios.interceptors.response.handlers, handler)
 }

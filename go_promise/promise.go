@@ -7,10 +7,10 @@ import (
 type (
 	Status      int
 	Resolve     func(value interface{})
-	Reject      func(err error)
+	Reject      func(err interface{})
 	Executor    func(resolve Resolve, reject Reject) error
 	OnFulFilled func(value interface{}) (interface{}, error)
-	OnRejected  func(reason error) (interface{}, error)
+	OnRejected  func(reason interface{}) (interface{}, error)
 )
 
 const (
@@ -21,7 +21,7 @@ const (
 
 type Promise struct {
 	value               interface{}
-	reason              error
+	reason              interface{}
 	status              Status
 	OnResolvedCallbacks []func()
 	OnRejectedCallbacks []func()
@@ -43,7 +43,7 @@ func NewPromise(executor Executor) *Promise {
 		}
 	}
 
-	reject := func(reason error) {
+	reject := func(reason interface{}) {
 		if promise.status == PENDING {
 			promise.status = REJECTED
 			promise.reason = reason
@@ -114,7 +114,7 @@ func ResolvePromise(value interface{}) *Promise {
 	})
 }
 
-func RejectPromise(reason error) *Promise {
+func RejectPromise(reason interface{}) *Promise {
 	return NewPromise(func(resolve Resolve, reject Reject) error {
 		reject(reason)
 		return nil
@@ -138,7 +138,7 @@ func (promise *Promise) All(promises []*Promise) *Promise {
 			promise.Then(func(value interface{}) (interface{}, error) {
 				processData(index, value)
 				return nil, nil
-			}, func(reason error) (interface{}, error) {
+			}, func(reason interface{}) (interface{}, error) {
 				reject(reason)
 				return nil, nil
 			})
@@ -161,7 +161,7 @@ func resolvePromise(promise *Promise, x interface{}, resolve Resolve, reject Rej
 			called = true
 			resolvePromise(promise, y, resolve, reject)
 			return nil, nil
-		}, func(err error) (interface{}, error) {
+		}, func(err interface{}) (interface{}, error) {
 			if called {
 				return nil, nil
 			}

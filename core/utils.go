@@ -1,7 +1,6 @@
-package go_axios
+package core
 
 import (
-	"go-axios/core"
 	"reflect"
 )
 
@@ -20,7 +19,7 @@ func IsString(value interface{}) bool {
 	return ok
 }
 
-func IsURLSearchParams(value interface{}) (core.Param, bool) {
-	param, ok := value.(core.Param)
+func IsURLSearchParams(value interface{}) (Param, bool) {
+	param, ok := value.(Param)
 	return param, ok
 }

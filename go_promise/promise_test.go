@@ -25,7 +25,7 @@ func TestPromiseAsync(t *testing.T) {
 	promise1.Then(func(value interface{}) (interface{}, error) {
 		fmt.Println("haha 1", value)
 		return nil, nil
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("bye 1", reason)
 		return nil, nil
 	})
@@ -41,19 +41,21 @@ func TestPromiseChain(t *testing.T) {
 	promise1.Then(func(value interface{}) (interface{}, error) {
 		fmt.Println("success 1", value)
 		return value, errors.New("ops")
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("fail 1", reason)
-		return nil, reason
+		err, _ := reason.(error)
+		return nil, err
 	}).Then(func(value interface{}) (interface{}, error) {
 		fmt.Println("success 2", value)
 		return nil, nil
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("fail 2", reason)
-		return nil, reason
+		err, _ := reason.(error)
+		return nil, err
 	}).Then(func(value interface{}) (interface{}, error) {
 		fmt.Println("success 3", value)
 		return value, nil
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("try to recover")
 		promise2 := NewPromise(func(resolve Resolve, reject Reject) error {
 			resolve("recover success")
@@ -67,20 +69,20 @@ func TestPromiseChain(t *testing.T) {
 			return nil
 		})
 		return promise3, nil
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("fail 4")
 		return nil, nil
 	}).Then(func(value interface{}) (interface{}, error) {
 		fmt.Println("success 5", value)
 		return value, nil
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("fail 5", reason)
 		return "god damn", nil
 	}).Then(func(value interface{}) (interface{}, error) {
 		time.Sleep(1 * time.Second)
 		fmt.Println("success 6", value)
 		return value, nil
-	}, func(reason error) (interface{}, error) {
+	}, func(reason interface{}) (interface{}, error) {
 		fmt.Println("fail 6", reason)
 		return nil, nil
 	})

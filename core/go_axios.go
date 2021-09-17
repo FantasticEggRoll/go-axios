@@ -2,7 +2,7 @@ package core
 
 import (
 	"go-axios/go_promise"
-	"go-axios/helpers"
+	"strings"
 )
 
 type Interceptors struct {
@@ -26,7 +26,7 @@ func Create(instanceConfig *Config) *Axios {
 }
 
 func (axios *Axios) Request(config *Config) *go_promise.Promise {
-	config = MergeConfig(axios.defaults, config)
+	//config = MergeConfig(axios.defaults, config)
 
 	requestInterceptorChain := make([]interface{}, 0)
 	//头插构造请求拦截链
@@ -81,56 +81,60 @@ func (axios *Axios) Request(config *Config) *go_promise.Promise {
 	return promise
 }
 
-func (axios *Axios) RequestWithoutData(url string, method Method, config *Config) {
-	MergeConfig(config, &Config{
-		URL:    url,
-		Method: method,
-		Data:   config.Data,
-	})
-	axios.Request(config)
+func (axios *Axios) RequestWithoutData(url string, method Method, config *Config) *go_promise.Promise {
+	/*
+		MergeConfig(axios.defaults, &Config{
+			URL:    url,
+			Method: method,
+			//Data:   config.Data,
+		})
+
+	*/
+	return axios.Request(axios.defaults)
 }
 
-func (axios *Axios) RequestWithData(url string, method Method, data interface{}, config *Config) {
-	MergeConfig(config, &Config{
+func (axios *Axios) RequestWithData(url string, method Method, data interface{}, config *Config) *go_promise.Promise {
+	MergeConfig(axios.defaults, &Config{
 		URL:    url,
 		Method: method,
 		Data:   data,
 	})
+	return axios.Request(config)
 }
 
-func (axios *Axios) Get(url string, config *Config) {
-	axios.RequestWithoutData(url, GET, config)
+func (axios *Axios) Get(url string, config *Config) *go_promise.Promise {
+	return axios.RequestWithoutData(url, GET, config)
 }
 
-func (axios *Axios) Delete(url string, config *Config) {
-	axios.RequestWithoutData(url, DELETE, config)
+func (axios *Axios) Delete(url string, config *Config) *go_promise.Promise {
+	return axios.RequestWithoutData(url, DELETE, config)
 }
 
-func (axios *Axios) Head(url string, config *Config) {
-	axios.RequestWithoutData(url, HEAD, config)
+func (axios *Axios) Head(url string, config *Config) *go_promise.Promise {
+	return axios.RequestWithoutData(url, HEAD, config)
 }
 
-func (axios *Axios) Options(url string, config *Config) {
-	axios.RequestWithoutData(url, OPTIONS, config)
+func (axios *Axios) Options(url string, config *Config) *go_promise.Promise {
+	return axios.RequestWithoutData(url, OPTIONS, config)
 }
 
-func (axios *Axios) Post(url string, data interface{}, config *Config) {
-	axios.RequestWithData(url, POST, data, config)
+func (axios *Axios) Post(url string, data interface{}, config *Config) *go_promise.Promise {
+	return axios.RequestWithData(url, POST, data, config)
 }
 
-func (axios *Axios) Put(url string, data interface{}, config *Config) {
-	axios.RequestWithData(url, PUT, data, config)
+func (axios *Axios) Put(url string, data interface{}, config *Config) *go_promise.Promise {
+	return axios.RequestWithData(url, PUT, data, config)
 }
 
-func (axios *Axios) Patch(url string, data interface{}, config *Config) {
-	axios.RequestWithData(url, PATCH, data, config)
+func (axios *Axios) Patch(url string, data interface{}, config *Config) *go_promise.Promise {
+	return axios.RequestWithData(url, PATCH, data, config)
 }
 
 func (axios *Axios) GetURL(config *Config) (string, error) {
 	config = MergeConfig(axios.defaults, config)
-	url, err := helpers.BuildURL(config.URL, config.Param, config.SerializeParam)
+	url, err := BuildURL(config.URL, config.Param, config.SerializeParam)
 	if err != nil {
 		return "", err
 	}
-	return url, nil
+	return strings.ReplaceAll(url, `\`, ""), nil
 }

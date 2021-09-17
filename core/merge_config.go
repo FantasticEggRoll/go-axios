@@ -7,16 +7,22 @@ package core
  * @returns {Object} New object resulting from merging config2 to config1
  */
 func MergeConfig(configs ...*Config) *Config {
-	mergedConfig := &Config{}
+	mergedConfig := Config{}
 
 	for _, config := range configs {
-		if config.URL != "" {
-			mergedConfig.URL = config.URL
+		if config == nil {
+			continue
 		}
-		if config.Method != "" {
-			mergedConfig.Method = config.Method
-		}
+		mergedConfig.URL = config.URL
+		mergedConfig.Method = config.Method
+		mergedConfig.Header = config.Header
+		mergedConfig.Param = config.Param
+		mergedConfig.SerializeParam = config.SerializeParam
+		mergedConfig.Data = config.Data
+		mergedConfig.TransformRequests = config.TransformRequests
+		mergedConfig.TransformerResponse = config.TransformerResponse
+		mergedConfig.Adapter = config.Adapter
 	}
 
-	return mergedConfig
+	return &mergedConfig
 }

@@ -1,13 +1,11 @@
-package go_axios
+package core
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go-axios/core"
 	"go-axios/go_promise"
-	"go-axios/helpers"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,9 +23,9 @@ func DefaultHttpClient() *http.Client {
 	return &http.Client{}
 }
 
-func DefaultTransformRequest(data interface{}, header core.Header) (interface{}, error) {
-	helpers.NormalizeHeaderName(header, "Accept")
-	helpers.NormalizeHeaderName(header, "Content-Type")
+func DefaultTransformRequest(data interface{}, header Header) (interface{}, error) {
+	NormalizeHeaderName(header, "Accept")
+	NormalizeHeaderName(header, "Content-Type")
 
 	contentType := strings.ToLower(header.Get("Content-Type"))
 	switch contentType {
@@ -84,7 +82,7 @@ func DefaultSerializeParam(param interface{}) (string, error) {
 	return neturl.QueryEscape(strings.Join(parts, "&")), nil
 }
 
-func DefaultAdapter(config *core.Config) *go_promise.Promise {
+func DefaultAdapter(config *Config) *go_promise.Promise {
 	return go_promise.NewPromise(func(resolve go_promise.Resolve, reject go_promise.Reject) error {
 		var ioReader io.Reader
 		var ok bool
@@ -101,7 +99,14 @@ func DefaultAdapter(config *core.Config) *go_promise.Promise {
 			reject(err)
 			return nil
 		}
+
 		resp, err := client.Do(request)
+
+		if resp == nil {
+			reject(errors.New("response body is nil"))
+			return nil
+		}
+
 		defer func() {
 			err := resp.Body.Close()
 			if err != nil {
@@ -115,7 +120,7 @@ func DefaultAdapter(config *core.Config) *go_promise.Promise {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			reject(err)
+			reject(errors.New(fmt.Sprintf("response status code is %d", resp.StatusCode)))
 			return nil
 		}
 

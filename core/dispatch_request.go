@@ -16,18 +16,14 @@ func dispatcherRequest(config *Config) (*go_promise.Promise, error) {
 	}
 
 	adapter := config.Adapter
-	adapter(config).Then(func(value interface{}) (interface{}, error) {
-		value, err := TransformResponseData(value, config)
+	return adapter(config).Then(func(response interface{}) (interface{}, error) {
+		response, err := TransformResponseData(response, config)
+		return response, err
+	}, func(reason interface{}) (interface{}, error) {
+		reason, err := TransformResponseData(reason, config)
 		if err != nil {
 			return nil, err
 		}
-
-	}, func(reason error) (interface{}, error) {
-
-	})
-
-	return go_promise.NewPromise(func(resolve go_promise.Resolve, reject go_promise.Reject) error {
-
-		return nil
+		return go_promise.RejectPromise(reason), nil
 	}), nil
 }

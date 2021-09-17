@@ -1,7 +1,6 @@
 package core
 
 import (
-	go_axios "go-axios"
 	"go-axios/go_promise"
 	"net/http"
 	"net/url"
@@ -20,14 +19,14 @@ type Param struct {
 }
 
 const (
-	GET     Method = "get"
-	DELETE  Method = "delete"
-	HEAD    Method = "head"
-	OPTIONS Method = "options"
+	GET     Method = http.MethodGet
+	DELETE  Method = http.MethodDelete
+	HEAD    Method = http.MethodHead
+	OPTIONS Method = http.MethodOptions
 
-	POST  Method = "post"
-	PUT   Method = "put"
-	PATCH Method = "patch"
+	POST  Method = http.MethodPost
+	PUT   Method = http.MethodPut
+	PATCH Method = http.MethodPatch
 )
 
 type ParamSerializer interface {
@@ -85,10 +84,10 @@ func NewConfig() *Config {
 		Header:              NewHeader(),
 		Param:               NewParam(),
 		Data:                nil,
-		SerializeParam:      SerializeParam(go_axios.DefaultSerializeParam),
-		TransformRequests:   []RequestTransformer{TransformerRequest(go_axios.DefaultTransformRequest)},
-		TransformerResponse: []ResponseTransformer{TransformerResponse(go_axios.DefaultTransformResponse)},
-		Adapter:             go_axios.DefaultAdapter,
+		SerializeParam:      SerializeParam(DefaultSerializeParam),
+		TransformRequests:   []RequestTransformer{TransformerRequest(DefaultTransformRequest)},
+		TransformerResponse: []ResponseTransformer{TransformerResponse(DefaultTransformResponse)},
+		Adapter:             DefaultAdapter,
 	}
 }
 

@@ -1,10 +1,8 @@
-package helpers
+package core
 
 import (
 	"encoding/json"
 	"errors"
-	go_axios "go-axios"
-	"go-axios/core"
 	neturl "net/url"
 	"strings"
 )
@@ -18,7 +16,7 @@ import (
  * @returns {error} error
  * @returns {string} The formatted url
  */
-func BuildURL(url string, param interface{}, serializeParam core.ParamSerializer) (string, error) {
+func BuildURL(url string, param interface{}, serializeParam ParamSerializer) (string, error) {
 	if param == nil {
 		return url, nil
 	}
@@ -30,7 +28,7 @@ func BuildURL(url string, param interface{}, serializeParam core.ParamSerializer
 		if err != nil {
 			return "", err
 		}
-	} else if tmpParam, ok := go_axios.IsURLSearchParams(param); ok {
+	} else if tmpParam, ok := IsURLSearchParams(param); ok {
 		serialized = tmpParam.Encode()
 	} else {
 		paramMap, ok := param.(map[string]interface{})
@@ -66,7 +64,7 @@ func serialize(param map[string]interface{}) (string, error) {
 		if value == nil {
 			continue
 		}
-		if go_axios.IsArray(key) || go_axios.IsSlice(key) {
+		if IsArray(key) || IsSlice(key) {
 			key += "[]"
 		} else {
 			value = []interface{}{value}
